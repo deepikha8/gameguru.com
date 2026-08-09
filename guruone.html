@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Game Levels</title>
+  <style>
+    body { font-family: Comic Sans MS; text-align:center; background:#f0f8ff; }
+    h1 { color:#333; }
+    #board { display:grid; grid-gap:10px; justify-content:center; margin-top:20px; }
+    .card {
+      width:80px; height:80px; background:#4CAF50; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:35px; color:transparent; cursor:pointer;
+    }
+    .card.revealed { background:#fff; color:black; }
+    #message { margin-top:20px; font-size:20px; color:darkblue; }
+    .nav { margin:20px; }
+  </style>
+</head>
+<body>
+  <h1>🧠 Memory Game</h1>
+  <div class="nav"><a href="guruzero.html">🏠 Back to Home</a></div>
+  <div id="board"></div>
+  <div id="message"></div>
+
+  <script>
+    let currentLevel = 1;
+    let first=null, second=null, matches=0;
+
+    const levelSets = {
+      1: ["🐶","🐱","🍎","🍌"],
+      2: ["🐶","🐱","🍎","🍌","⚽","🏀"],
+      3: ["🐶","🐱","🍎","🍌","⚽","🏀","🚗","✈️"],
+      4: ["🐶","🐱","🍎","🍌","⚽","🏀","🚗","✈️","🌸","🌞"],
+      5: ["🐶","🐱","🍎","🍌","⚽","🏀","🚗","✈️","🌸","🌞","🎵","🍩"]
+    };
+
+    function startGame(level){
+      matches=0; first=null; second=null;
+      let board=document.getElementById("board");
+      board.innerHTML="";
+      let set=levelSets[level];
+      board.style.gridTemplateColumns=`repeat(${Math.min(set.length,4)},80px)`;
+      let cards=[...set,...set].sort(()=>Math.random()-0.5);
+      cards.forEach(sym=>{
+        let card=document.createElement("div");
+        card.className="card"; card.textContent=sym;
+        card.addEventListener("click",()=>flip(card));
+        board.appendChild(card);
+      });
+      document.getElementById("message").textContent="Level "+level;
+    }
+
+    function flip(card){
+      if(card.classList.contains("revealed")) return;
+      card.classList.add("revealed");
+      if(!first){ first=card; }
+      else if(!second && card!==first){ second=card; check(); }
+    }
+
+    function check(){
+      if(first.textContent===second.textContent){
+        matches++;
+        reset();
+        let total=document.querySelectorAll(".card").length/2;
+        if(matches===total){
+          if(currentLevel<5){
+            document.getElementById("message").textContent="🎉 Level "+currentLevel+" Complete! Moving to Level "+(currentLevel+1);
+            setTimeout(()=>{
+              currentLevel++;
+              startGame(currentLevel);
+            },1500);
+          } else {
+            document.getElementById("message").textContent="🏆 You beat all 5 levels!";
+          }
+        }
+      } else {
+        setTimeout(()=>{
+          first.classList.remove("revealed");
+          second.classList.remove("revealed");
+          reset();
+        },1000);
+      }
+    }
+    function reset(){ first=null; second=null; }
+
+    // Start at Level 1
+    startGame(currentLevel);
+  </script>
+</body>
+</html>
